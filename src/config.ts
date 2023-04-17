@@ -4,7 +4,7 @@ import { clusterApiUrl, Connection, PublicKey } from "@solana/web3.js";
 export const network = (process.env.NEXT_PUBLIC_SOLANA_NETWORK ||
   WalletAdapterNetwork.Mainnet) as WalletAdapterNetwork;
 // const network = WalletAdapterNetwork.Devnet;
-export const rpcHost = 'https://twilight-late-road.solana-mainnet.quiknode.pro/6f80120a40ea2c7f486373ef88f689670b76abd9/';
+export const rpcHost = 'https://powerful-tiniest-fire.solana-mainnet.quiknode.pro/882237b30b2023713f1438bc79eb76e9ff9e1689/';
 
 export const candyMachineId = new PublicKey(
     "2STv1Te4MZKR1ezooTnmoq1C1AMJYHegtz4SGzyEDfST"
