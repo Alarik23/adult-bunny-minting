@@ -651,6 +651,10 @@ const Home = (props: HomeProps) => {
                 {[{
                   label: '_',
                   visible: 'Evolve Teens Bunny'
+                },
+                {
+                  label: 'free',
+                  visible: 'Team Mint'
                 }
               ].map((x, i) => {
                   // @ts-ignore

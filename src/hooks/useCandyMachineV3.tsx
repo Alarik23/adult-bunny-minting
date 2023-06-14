@@ -360,7 +360,7 @@ export default function useCandyMachineV3(
           programId: TOKEN_PROGRAM_ID,
         })
       ).value.filter(
-        (x) => parseInt(x.account.data.parsed.info.tokenAmount.amount) > 1
+        (x) => parseInt(x.account.data.parsed.info.tokenAmount.amount) >= 1
       );
 
       return tokenAccounts.map((x) => ({
