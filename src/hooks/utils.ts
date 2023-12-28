@@ -189,6 +189,7 @@ export const parseGuardGroup = async (
   }
 
   if (guardsInput.tokenPayment) {
+    if(!guardsParsed.payment) guardsParsed.payment = {}
     guardsParsed.payment.token = {
         mint: guardsInput.tokenPayment.mint,
         symbol: guardsInput.tokenPayment.amount.currency.symbol,

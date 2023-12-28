@@ -653,7 +653,7 @@ const Home = (props: HomeProps) => {
                   visible: 'Evolve Teens Bunny (BUFF)'
                 },
                 {
-                  label: '_',
+                  label: 'nobdy',
                   visible: '$NOBDY'
                 },
                 {
