@@ -170,7 +170,7 @@ export const parseGuardGroup = async (
 
   // Check for payment guards
 
-  // guardsParsed.payments = []
+  guardsParsed.payment = {}
 
   if (guardsInput.solPayment) {
     guardsParsed.payment = {
@@ -189,7 +189,6 @@ export const parseGuardGroup = async (
   }
 
   if (guardsInput.tokenPayment) {
-    if(!guardsParsed.payment) guardsParsed.payment = {}
     guardsParsed.payment.token = {
         mint: guardsInput.tokenPayment.mint,
         symbol: guardsInput.tokenPayment.amount.currency.symbol,
@@ -395,8 +394,9 @@ export const parseGuardStates = ({
   }
 
   if (guards.payment?.token) {
+
     const tokenAccount = tokenHoldings.find((x) =>
-      x.mint.equals(guards.payment?.token?.mint)
+      x.mint.toString() === guards.payment?.token?.mint.toString()
     );
     let canPayFor = tokenAccount
       ? Math.floor(tokenAccount.balance / guards.payment?.token?.amount)
