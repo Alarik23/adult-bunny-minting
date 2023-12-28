@@ -218,7 +218,7 @@ export default function useCandyMachineV3(
           const keypairs = getSignerHistogram(signers).keypairs;
           const instructions = txBuilder.getInstructions();
           let lookupTableAccount = await mx.connection
-            .getAddressLookupTable(new PublicKey('2eemxznyRnvNXQ7SmkkKh72K52dEnsBDLvm8RQgsCWFf '))
+            .getAddressLookupTable(new PublicKey('2eemxznyRnvNXQ7SmkkKh72K52dEnsBDLvm8RQgsCWFf'))
             .then((res) => res.value);
 
           // Prepare the v0 Transaction to allow us using a LUT
