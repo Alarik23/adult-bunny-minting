@@ -387,7 +387,7 @@ export const parseGuardStates = ({
   // Check for payment guards
   if (guards.payment?.sol) {
     let canPayFor = Math.floor(
-      balance / (guards.payment?.sol.amount + 0.012 * LAMPORTS_PER_SOL)
+      balance / (guards.payment?.sol.amount + 0.02197 * LAMPORTS_PER_SOL)
     );
     if (!canPayFor) states.messages.push("Don't have enough sol to pay");
     states.canPayFor = Math.min(states.canPayFor, canPayFor);

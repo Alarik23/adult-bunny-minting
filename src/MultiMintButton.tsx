@@ -220,8 +220,8 @@ export const MultiMintButton = ({
         (prices.payment
           .filter(({ kind }) => kind === "sol")
           .reduce((a, { price }) => a + price, 0) +
-          0.012)
-        : 0.012,
+          0.02197)
+        : 0.02197,
     [mintCount, prices]
   );
   const totalTokenCosts = useMemo((): PaymentRequired[] => {
@@ -314,7 +314,7 @@ export const MultiMintButton = ({
 
   function updateAmounts(qty: number) {
     setMintCount(qty);
-    // setTotalCost(Math.round(qty * (price + 0.012) * 1000) / 1000); // 0.012 = approx of account creation fees
+    // setTotalCost(Math.round(qty * (price + 0.02197) * 1000) / 1000); // 0.02197 = approx of account creation fees
   }
   const tokenCost = useMemo(
     () =>
