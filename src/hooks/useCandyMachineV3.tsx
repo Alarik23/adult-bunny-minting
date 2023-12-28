@@ -23,7 +23,6 @@ import React from "react";
 import { MerkleTree } from "merkletreejs";
 import {
   AllowLists,
-  CustomCandyGuardMintSettings,
   GuardGroup,
   GuardGroupStates,
   NftPaymentMintSettings,
@@ -31,13 +30,11 @@ import {
   Token,
 } from "./types";
 import {
-  fetchMintLimit,
   guardToPaymentUtil,
   mergeGuards,
   parseGuardGroup,
   parseGuardStates,
 } from "./utils";
-import { TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 
 export default function useCandyMachineV3(
   candyMachineId: PublicKey | string,
@@ -66,9 +63,8 @@ export default function useCandyMachineV3(
 
   const tokenHoldings = React.useMemo<Token[]>(() => {
     if (!nftHoldings?.length || !allTokens?.length) return [];
-    console.log(allTokens, nftHoldings, 'alll')
     return allTokens.filter(
-      (x) => !nftHoldings.find((y) => x.mint.toString() === (y.address.toString()))
+      (x) => !nftHoldings.find((y) => x.mint.equals(y.address))
     );
   }, [nftHoldings, allTokens]);
 
@@ -213,75 +209,41 @@ export default function useCandyMachineV3(
         }
         const blockhash = await mx.rpc().getLatestBlockhash();
 
-        const transactions = await Promise.all(transactionBuilders.map(async (txBuilder) => {
-          const signers = txBuilder.getSigners();
-          const keypairs = getSignerHistogram(signers).keypairs;
-          const instructions = txBuilder.getInstructions();
-          let lookupTableAccount = await mx.connection
-            .getAddressLookupTable(new PublicKey('2eemxznyRnvNXQ7SmkkKh72K52dEnsBDLvm8RQgsCWFf'))
-            .then((res) => res.value);
-
-          // Prepare the v0 Transaction to allow us using a LUT
-          let blockhash = await mx.connection
-            .getLatestBlockhash()
-          const messageV0 = new TransactionMessage({
-            payerKey: wallet.publicKey,
-            recentBlockhash: blockhash.blockhash,
-            instructions,
-          }).compileToV0Message([lookupTableAccount]);
-          const transactionV0 = new VersionedTransaction(messageV0);
-          return transactionV0
-        }))
+        const transactions = transactionBuilders.map((t) =>
+          t.toTransaction(blockhash)
+        );
         const signers: { [k: string]: IdentitySigner } = {};
         transactions.forEach((tx, i) => {
-          // @ts-ignore 
           tx.feePayer = wallet.publicKey;
-          // @ts-ignore 
           tx.recentBlockhash = blockhash.blockhash;
           transactionBuilders[i].getSigners().forEach((s) => {
             if ("signAllTransactions" in s) signers[s.publicKey.toString()] = s;
-            else if ("secretKey" in s) tx.sign([s]);
+            else if ("secretKey" in s) tx.partialSign(s);
             // @ts-ignore
             else if ("_signer" in s) tx.partialSign(s._signer);
           });
         });
         let signedTransactions = transactions;
+
         for (let signer in signers) {
-          // @ts-ignore 
           signedTransactions = await signers[signer].signAllTransactions(transactions);
         }
         if (allowList) {
           const allowListCallGuardRouteTx = signedTransactions.shift();
           const allowListCallGuardRouteTxBuilder = transactionBuilders.shift();
-          const sendTx = async () => {
-            // @ts-ignore 
-            const txHash = await mx.rpc().sendAndConfirmTransaction(allowListCallGuardRouteTx, {
-              commitment: "processed",
-            });
-            return txHash
-          }
-          const txHash = await sendTx()
-          console.log(txHash)
+          await mx.rpc().sendAndConfirmTransaction(allowListCallGuardRouteTx, {
+            commitment: "processed",
+          });
         }
         const output = await Promise.all(
-          signedTransactions.map(async (tx, i) => {
-            const signature = await connection.sendRawTransaction(tx.serialize());
-            await connection.confirmTransaction(signature, "processed").then(() => ({
-              ...tx,
-              context: transactionBuilders[i].getContext()
-            }))
-            let r = {
-              ...tx,
-              context: transactionBuilders[i].getContext()
-            }
-            return r
-            // return mx
-            //   .rpc()
-            //   .sendAndConfirmTransaction(tx, { commitment: "finalized" })
-            //   .then((tx) => ({
-            //     ...tx,
-            //     context: transactionBuilders[i].getContext() as any,
-            //   }));
+          signedTransactions.map((tx, i) => {
+            return mx
+              .rpc()
+              .sendAndConfirmTransaction(tx, { commitment: "finalized" })
+              .then((tx) => ({
+                ...tx,
+                context: transactionBuilders[i].getContext() as any,
+              }));
           })
         );
         nfts = await Promise.all(
@@ -289,9 +251,7 @@ export default function useCandyMachineV3(
             mx
               .nfts()
               .findByMint({
-                // @ts-ignore 
                 mintAddress: context.mintSigner.publicKey,
-                // @ts-ignore 
                 tokenAddress: context.tokenAddress,
               })
               .catch((e) => null)
@@ -356,19 +316,14 @@ export default function useCandyMachineV3(
       .catch((e) => console.error("Failed to fetch wallet nft holdings", e));
 
     (async (walletAddress: PublicKey): Promise<Token[]> => {
-      const alltokens200 = await connection.getParsedTokenAccountsByOwner(walletAddress, {
-        programId: TOKEN_PROGRAM_ID,
-      })
-      console.log(alltokens200.value.map((x) => ({
-        mint: (x.account.data.parsed.info.mint.toString()),
-        balance: parseInt(x.account.data.parsed.info.tokenAmount.amount),
-        decimals: x.account.data.parsed.info.tokenAmount.decimals,
-      })), "tokens")
       const tokenAccounts = (
-        alltokens200
+        await connection.getParsedTokenAccountsByOwner(walletAddress, {
+          programId: TOKEN_PROGRAM_ID,
+        })
       ).value.filter(
         (x) => parseInt(x.account.data.parsed.info.tokenAmount.amount) >= 1
       );
+
       return tokenAccounts.map((x) => ({
         mint: new PublicKey(x.account.data.parsed.info.mint),
         balance: parseInt(x.account.data.parsed.info.tokenAmount.amount),
