@@ -650,11 +650,7 @@ const Home = (props: HomeProps) => {
                 </ProgressbarWrap>
                 {[{
                   label: '_',
-                  visible: 'Evolve Teens Bunny (BUFF)'
-                },
-                {
-                  label: 'nobdy',
-                  visible: '$NOBDY'
+                  visible: 'Evolve Teens Bunny'
                 },
                 {
                   label: 'free',
