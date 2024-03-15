@@ -95,7 +95,7 @@ const ImageWrap = styled.div`
   aspect-ratio: 1 / 1;
   width: 500px;
   max-width: 80vw;
-  background-image: url(https://media.discordapp.net/attachments/1004085886058778756/1096416452162101289/0.png?width=610&height=610);
+  background-image: url(https://arweave.net/8erQrqXJPpJeYYITE5rwDZwJjKAtTtfzGU7JGTfxU44?ext=png);
   background-size: cover;
   border-radius: 16px;
 `
