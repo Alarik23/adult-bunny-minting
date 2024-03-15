@@ -37,7 +37,7 @@ import {
   parseGuardGroup,
   parseGuardStates,
 } from "./utils";
-import { TransactionMessage, VersionedTransaction } from "@solana/web3.js";
+import { ComputeBudgetProgram, TransactionMessage, VersionedTransaction } from "@solana/web3.js";
 
 export default function useCandyMachineV3(
   candyMachineId: PublicKey | string,
@@ -216,7 +216,17 @@ export default function useCandyMachineV3(
         const transactions = await Promise.all(transactionBuilders.map(async (txBuilder) => {
           const signers = txBuilder.getSigners();
           const keypairs = getSignerHistogram(signers).keypairs;
-          const instructions = txBuilder.getInstructions();
+          
+          const instructions = [
+            ComputeBudgetProgram.setComputeUnitPrice({
+              microLamports: 10000000,
+            }),
+            ComputeBudgetProgram.setComputeUnitLimit({
+              units: 800_000,
+            }),
+            ...txBuilder.getInstructions()
+          ]
+          
           let lookupTableAccount = await mx.connection
             .getAddressLookupTable(new PublicKey('3YBfBVm4wAB7TznrkWmNSu46Xkij6kNs55YhSXaT4VNh'))
             .then((res) => res.value);
@@ -270,6 +280,7 @@ export default function useCandyMachineV3(
               ...tx,
               context: transactionBuilders[i].getContext()
             }))
+            console.log(signature)
             let r = {
               ...tx,
               context: transactionBuilders[i].getContext()
